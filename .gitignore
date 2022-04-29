@@ -5,6 +5,5 @@ ros/build/*
 ros/devel/*
 ros/src/ds4_driver/
 ros/src/rplidar_ros/
+ros/src/abot_sound/abot_speech_to_text/model/*
 .vscode/*
-
-ru4sphinx/*

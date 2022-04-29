@@ -1,6 +1,6 @@
 <launch>
 	<!-- Audio capture params -->
-	<arg name="device" default="plughw:1" />
+	<arg name="device" default="plughw:0" />
 	<arg name="bitrate" default="160" />
 	<arg name="channels" default="1" />
 	<arg name="sample_rate" default="16000" />
@@ -22,7 +22,7 @@
 	<arg name="kws" default="$(find abot_speech_to_text)/config/abot_kwslist.kwslist" />
 	<arg name="gram" default="$(find abot_speech_to_text)/config/abot_gram" />
 	<arg name="grammar" default="robot_cmd" />
-	<arg name="rule" default="all_commands" />
+	<arg name="rule" default="commands" />
 
 	<node name="asr_control" pkg="abot_speech_to_text" type="asr_control.py" output="screen" >
 		<param name="hmm" value="$(arg hmm)" />
@@ -31,7 +31,7 @@
 		<param name="grammar" value="$(arg grammar)" />
 		<param name="rule" value="$(arg rule)" />
 	</node>
-
+	
 	<node name="kws_control" pkg="abot_speech_to_text" type="kws_control.py" output="screen" >
 		<param name="hmm" value="$(arg hmm)" />
 		<param name="dict" value="$(arg dict)" />

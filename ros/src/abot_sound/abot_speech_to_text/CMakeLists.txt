@@ -12,7 +12,6 @@ catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
 
 catkin_install_python(PROGRAMS
-	scripts/asr_control.py
 	scripts/kws_control.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

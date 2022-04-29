@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import rospy
-from std_msgs.msg import String, Empty, Bool
+from std_msgs.msg import String, Empty
 from audio_common_msgs.msg import AudioData
 from pocketsphinx import Decoder
 
@@ -18,7 +18,6 @@ class KWSDetection(object):
 		self._buffer_index = 0
 		self._buffer = bytearray()
 		self._kws_found = False
-		self._tts_is_speaking = False
 		self.startRecognizer()
 
 	def startRecognizer(self):
@@ -31,19 +30,11 @@ class KWSDetection(object):
 		rospy.loginfo("KWS control node: Decoder started successfully")
 		rospy.Subscriber('/audio', AudioData, self.makeBuffer)
 		rospy.Subscriber('/abot/stt/grammar_not_found', Empty, self.grammarCheckCallback)
-		rospy.Subscriber("/abot/tts/speaking_in_progress", Bool, self.ttsSpeakingCheck)
 		rospy.spin()
 
 	def grammarCheckCallback(self, empty_msg):
 		self._kws_found = False
 		rospy.logwarn("KWS control node: Stop ASR audio transmission")
-
-	def ttsSpeakingCheck(self, bool_msg):
-		self._tts_is_speaking = bool_msg.data
-		if self._tts_is_speaking:
-			rospy.loginfo("KWS control node: Decoder paused while TTS is speaking")
-		else:
-			rospy.loginfo("KWS control node: Decoder returned to work")
 
 	def makeBuffer(self, audio_msg):
 		self._buffer += audio_msg.data
@@ -55,21 +46,18 @@ class KWSDetection(object):
 
 	def processAudio(self, audio_buffer):
 		self._decoder.process_raw(audio_buffer, False, False)
-
-		if self._tts_is_speaking is False:
-			if self._decoder.hyp() is not None:
-				for seg in self._decoder.seg():
-					rospy.logwarn("Detected key words: %s ", seg.word)
-					self._decoder.end_utt()
-					msg = seg.word
-					self._kws_data_pub.publish(msg)
-					self._kws_found = True
-					self._decoder.start_utt()
-
-			if self._kws_found is True:
-				msg = AudioData()
-				msg.data = audio_buffer
-				self._grammar_audio_pub.publish(msg)
+		if self._decoder.hyp() is not None:
+			for seg in self._decoder.seg():
+				rospy.logwarn("Detected key words: %s ", seg.word)
+				self._decoder.end_utt()
+				msg = seg.word
+				self._kws_data_pub.publish(msg)
+				self._kws_found = True
+				self._decoder.start_utt()
+		if self._kws_found is True:
+			msg = AudioData()
+			msg.data = audio_buffer
+			self._grammar_audio_pub.publish(msg)
 
 	@staticmethod
 	def shutdown():
